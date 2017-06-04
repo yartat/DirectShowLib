@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #endregion
 
-using System;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Security;
 

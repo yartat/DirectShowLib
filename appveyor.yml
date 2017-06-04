@@ -1,0 +1,15 @@
+version: 2.1.0.1
+
+branches:
+  only:
+  - master
+
+configuration: Release
+
+platform: Any CPU
+
+image: Visual Studio 2017
+
+build:
+  publish_nuget: true
+  verbosity: minimal
