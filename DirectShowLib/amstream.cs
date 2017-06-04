@@ -26,6 +26,8 @@ using System;
 using System.Runtime.InteropServices;
 
 using System.Security;
+
+using JetBrains.Annotations;
 #if !USING_NET11
 using System.Runtime.InteropServices.ComTypes;
 #endif
@@ -38,12 +40,32 @@ namespace DirectShowLib.MultimediaStreaming
     /// From unnamed enum
     /// </summary>
     [Flags]
+    [PublicAPI]
     public enum AMMStream
     {
+        /// <summary>
+        /// 
+        /// </summary>
         None = 0x0,
+
+        /// <summary>
+        /// 
+        /// </summary>
         AddDefaultRenderer = 0x1,
+
+        /// <summary>
+        /// 
+        /// </summary>
         CreatePeer = 0x2,
+
+        /// <summary>
+        /// 
+        /// </summary>
         StopIfNoSamples = 0x4,
+
+        /// <summary>
+        /// 
+        /// </summary>
         NoStall = 0x8
     }
 
@@ -51,9 +73,17 @@ namespace DirectShowLib.MultimediaStreaming
     /// From unnamed enum
     /// </summary>
     [Flags]
+    [PublicAPI]
     public enum AMMMultiStream
     {
+        /// <summary>
+        /// 
+        /// </summary>
         None = 0x0,
+
+        /// <summary>
+        /// 
+        /// </summary>
         NoGraphThread = 0x1
     }
 
@@ -61,13 +91,37 @@ namespace DirectShowLib.MultimediaStreaming
     /// From unnamed enum
     /// </summary>
     [Flags]
+    [PublicAPI]
     public enum AMOpenModes
     {
+        /// <summary>
+        /// 
+        /// </summary>
         RenderTypeMask = 0x3,
+
+        /// <summary>
+        /// 
+        /// </summary>
         RenderToExisting = 0,
+
+        /// <summary>
+        /// 
+        /// </summary>
         RenderAllStreams = 0x1,
+
+        /// <summary>
+        /// 
+        /// </summary>
         NoRender = 0x2,
+
+        /// <summary>
+        /// 
+        /// </summary>
         NoClock = 0x4,
+
+        /// <summary>
+        /// 
+        /// </summary>
         Run = 0x8
     }
 
@@ -75,6 +129,12 @@ namespace DirectShowLib.MultimediaStreaming
 
     #region Interfaces
 
+    /// <summary>
+    /// The IAMMediaStream interface handles the internal connections between Microsoft DirectShow filters and filter graphs in 
+    /// applications that use multimedia streaming. This enables applications to automatically negotiate the transfer and conversion 
+    /// of data from the source to the application without having to write code to handle the connection, transfer of data, data conversion, 
+    /// and actual data rendering or file storage. This provides a uniform and predictable method of data access and control.
+    /// </summary>
     [ComImport, SuppressUnmanagedCodeSecurity,
     Guid("BEBE595D-9A6F-11D0-8FDE-00C04FD9189D"),
     InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -82,29 +142,34 @@ namespace DirectShowLib.MultimediaStreaming
     {
         #region IMediaStream Methods
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetMultiMediaStream(
             [MarshalAs(UnmanagedType.Interface)] out IMultiMediaStream ppMultiMediaStream
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetInformation(
             out Guid pPurposeId,
             out StreamType pType
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int SetSameFormat(
             [In, MarshalAs(UnmanagedType.Interface)] IMediaStream pStreamThatHasDesiredFormat,
             [In] int dwFlags
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int AllocateSample(
             [In] int dwFlags,
             [MarshalAs(UnmanagedType.Interface)] out IStreamSample ppSample
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int CreateSharedSample(
             [In, MarshalAs(UnmanagedType.Interface)] IStreamSample pExistingSample,
@@ -112,6 +177,7 @@ namespace DirectShowLib.MultimediaStreaming
             [MarshalAs(UnmanagedType.Interface)] out IStreamSample ppNewSample
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int SendEndOfStream(
             int dwFlags
@@ -119,29 +185,65 @@ namespace DirectShowLib.MultimediaStreaming
 
         #endregion
 
+        /// <summary>
+        /// Creates and initializes a new media stream with the specified stream type and purpose ID.
+        /// </summary>
+        /// <param name="pSourceObject">Pointer to an <see cref="IUnknown"/> source object.</param>
+        /// <param name="dwFlags">Value that modifies the media stream's behavior; it is a combination of one or more of the following values.
+        /// <list type="bullet">
+        /// <item><description>AMMSF_ADDDEFAULTRENDERER - Add a default renderer.</description></item>
+        /// <item><description>AMMSF_CREATEPEER - Create a peer stream based on the same object as a pStreamObject.</description></item>
+        /// <item><description>AMMSF_NOSTALL - Run the stream even if <see cref="IStreamSample.Update"/> is not called.</description></item>
+        /// <item><description>AMMSF_STOPIFNOSAMPLES - Terminates the stream if no samples were created or if the last sample is deleted.</description></item>
+        /// </list>
+        /// </param>
+        /// <param name="purposeId">Purpose ID for the new media stream.</param>
+        /// <param name="streamType"><see cref="StreamType"/> enumeration value that specifies the new media stream's media type.</param>
+        /// <returns>Returns S_OK if successful or E_POINTER if one or more of the required parameters are invalid.</returns>
         [PreserveSig]
         int Initialize(
             [In, MarshalAs(UnmanagedType.IUnknown)] object pSourceObject,
             [In] AMMStream dwFlags,
-            [In, MarshalAs(UnmanagedType.LPStruct)] Guid PurposeId,
-            [In] StreamType StreamType
+            [In, MarshalAs(UnmanagedType.LPStruct)] Guid purposeId,
+            [In] StreamType streamType
             );
 
+        /// <summary>
+        /// Sets the filter state.
+        /// </summary>
+        /// <param name="state">Sets the filter's state, as specified by the <see cref="FilterState"/> enumerated type.</param>
+        /// <returns>Returns S_OK if successful or E_INVALIDARG if the State parameter is invalid.</returns>
         [PreserveSig]
         int SetState(
-            [In] FilterState State
+            [In] FilterState state
             );
 
+        /// <summary>
+        /// Adds the specified media stream to the current multimedia stream.
+        /// </summary>
+        /// <param name="pAmMultiMediaStream">Reference to the <see cref="IAMMultiMediaStream"/> object to add the current media stream to.</param>
+        /// <returns></returns>
         [PreserveSig]
         int JoinAMMultiMediaStream(
-            [In, MarshalAs(UnmanagedType.Interface)] IAMMultiMediaStream pAMMultiMediaStream
+            [In, MarshalAs(UnmanagedType.Interface)] IAMMultiMediaStream pAmMultiMediaStream
             );
 
+        /// <summary>
+        /// Connects a media stream to the Media Stream filter, which is used internally by the multimedia stream object. 
+        /// Applications should not call this method.
+        /// </summary>
+        /// <param name="pMediaStreamFilter">Reference to the filter's <see cref="IMediaStreamFilter"/> interface.</param>
+        /// <returns>Returns S_OK if successful.</returns>
         [PreserveSig]
         int JoinFilter(
             [In, MarshalAs(UnmanagedType.Interface)] IMediaStreamFilter pMediaStreamFilter
             );
 
+        /// <summary>
+        /// Connects a media stream filter to a filter graph.
+        /// </summary>
+        /// <param name="pFilterGraph">Reference to the current media stream filter to add to the specified filter graph.</param>
+        /// <returns></returns>
         [PreserveSig]
         int JoinFilterGraph(
             [In, MarshalAs(UnmanagedType.Interface)] IFilterGraph pFilterGraph
@@ -155,59 +257,68 @@ namespace DirectShowLib.MultimediaStreaming
     {
         #region IMultiMediaStream Methods
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetInformation(
             out MMSSF pdwFlags,
             out StreamType pStreamType
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetMediaStream(
             [In, MarshalAs(UnmanagedType.LPStruct)] Guid idPurpose,
             [MarshalAs(UnmanagedType.Interface)] out IMediaStream ppMediaStream
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int EnumMediaStreams(
-            [In] int Index,
+            [In] int index,
             [MarshalAs(UnmanagedType.Interface)] out IMediaStream ppMediaStream
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetState(
             out StreamState pCurrentState
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int SetState(
-            [In] StreamState NewState
+            [In] StreamState newState
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetTime(
             out long pCurrentTime
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetDuration(
             out long pDuration
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int Seek(
-            [In] long SeekTime
+            [In] long seekTime
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetEndOfStreamEventHandle(
-            out IntPtr phEOS
+            out IntPtr phEos
             );
 
         #endregion
 
         [PreserveSig]
         int Initialize(
-            [In] StreamType StreamType,
+            [In] StreamType streamType,
             [In] AMMMultiStream dwFlags,
             [In, MarshalAs(UnmanagedType.Interface)] IGraphBuilder pFilterGraph
             );
@@ -225,7 +336,7 @@ namespace DirectShowLib.MultimediaStreaming
         [PreserveSig]
         int AddMediaStream(
             [In, MarshalAs(UnmanagedType.IUnknown)] object pStreamObject,
-            [In] DsGuid PurposeId,
+            [In] DsGuid purposeId,
             [In] AMMStream dwFlags,
             [Out] IMediaStream ppNewStream
             );
@@ -261,29 +372,34 @@ namespace DirectShowLib.MultimediaStreaming
     {
         #region IMediaStream Methods
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetMultiMediaStream(
             [MarshalAs(UnmanagedType.Interface)] out IMultiMediaStream ppMultiMediaStream
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetInformation(
             out Guid pPurposeId,
             out StreamType pType
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int SetSameFormat(
             [In, MarshalAs(UnmanagedType.Interface)] IMediaStream pStreamThatHasDesiredFormat,
             [In] int dwFlags
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int AllocateSample(
             [In] int dwFlags,
             [MarshalAs(UnmanagedType.Interface)] out IStreamSample ppSample
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int CreateSharedSample(
             [In, MarshalAs(UnmanagedType.Interface)] IStreamSample pExistingSample,
@@ -291,6 +407,7 @@ namespace DirectShowLib.MultimediaStreaming
             [MarshalAs(UnmanagedType.Interface)] out IStreamSample ppNewSample
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int SendEndOfStream(
             int dwFlags
@@ -316,7 +433,7 @@ namespace DirectShowLib.MultimediaStreaming
             [In] IntPtr pbBuffer,
             [In] int dwFlags,
             [In, MarshalAs(UnmanagedType.IUnknown)] object pUnkOuter,
-            [MarshalAs(UnmanagedType.Interface)] out IAMMediaTypeSample ppAMMediaTypeSample
+            [MarshalAs(UnmanagedType.Interface)] out IAMMediaTypeSample ppAmMediaTypeSample
             );
 
         [PreserveSig]
@@ -337,11 +454,13 @@ namespace DirectShowLib.MultimediaStreaming
     {
         #region IStreamSample Methods
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetMediaStream(
             [MarshalAs(UnmanagedType.Interface)] out IMediaStream ppMediaStream
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetSampleTimes(
             out long pStartTime,
@@ -349,20 +468,23 @@ namespace DirectShowLib.MultimediaStreaming
             out long pCurrentTime
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int SetSampleTimes(
             [In] DsLong pStartTime,
             [In] DsLong pEndTime
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int Update(
             [In] SSUpdate dwFlags,
             [In] IntPtr hEvent,
-            [In] IntPtr pfnAPC,
-            [In] IntPtr dwAPCData
+            [In] IntPtr pfnApc,
+            [In] IntPtr dwApcData
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int CompletionStatus(
             [In] CompletionStatusFlags dwFlags,
@@ -402,7 +524,7 @@ namespace DirectShowLib.MultimediaStreaming
 
         [PreserveSig]
         int SetSyncPoint(
-            [In, MarshalAs(UnmanagedType.Bool)] bool IsSyncPoint
+            [In, MarshalAs(UnmanagedType.Bool)] bool isSyncPoint
             );
 
         [PreserveSig]
@@ -410,7 +532,7 @@ namespace DirectShowLib.MultimediaStreaming
 
         [PreserveSig]
         int SetPreroll(
-            [In, MarshalAs(UnmanagedType.Bool)] bool IsPreroll
+            [In, MarshalAs(UnmanagedType.Bool)] bool isPreroll
             );
 
         [PreserveSig]
@@ -436,7 +558,7 @@ namespace DirectShowLib.MultimediaStreaming
 
         [PreserveSig]
         int SetDiscontinuity(
-            [In, MarshalAs(UnmanagedType.Bool)] bool Discontinuity
+            [In, MarshalAs(UnmanagedType.Bool)] bool discontinuity
             );
 
         [PreserveSig]
@@ -459,6 +581,7 @@ namespace DirectShowLib.MultimediaStreaming
     {
         #region IPersist Methods
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetClassID(
             out Guid pClassID
@@ -468,28 +591,34 @@ namespace DirectShowLib.MultimediaStreaming
 
         #region IMediaFilter Methods
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int Stop();
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int Pause();
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int Run(
             [In] long tStart
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetState(
             [In] int dwMilliSecsTimeout,
             out FilterState State
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int SetSyncSource(
             [In, MarshalAs(UnmanagedType.Interface)] IReferenceClock pClock
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int GetSyncSource(
             [MarshalAs(UnmanagedType.Interface)] out IReferenceClock pClock
@@ -499,28 +628,33 @@ namespace DirectShowLib.MultimediaStreaming
 
         #region IBaseFilter Methods
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int EnumPins(
             [MarshalAs(UnmanagedType.Interface)] out IEnumPins ppEnum
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int FindPin(
             [In, MarshalAs(UnmanagedType.LPWStr)] string Id,
             [MarshalAs(UnmanagedType.Interface)] out IPin ppPin
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int QueryFilterInfo(
             out FilterInfo pInfo
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int JoinFilterGraph(
             [In, MarshalAs(UnmanagedType.Interface)] IFilterGraph pGraph,
             [In, MarshalAs(UnmanagedType.LPWStr)] string pName
             );
 
+        /// <inheritdoc/>
         [PreserveSig]
         new int QueryVendorInfo(
             [MarshalAs(UnmanagedType.LPWStr)] out string pVendorInfo
@@ -530,7 +664,7 @@ namespace DirectShowLib.MultimediaStreaming
 
         [PreserveSig]
         int AddMediaStream(
-            [In, MarshalAs(UnmanagedType.Interface)] IAMMediaStream pAMMediaStream
+            [In, MarshalAs(UnmanagedType.Interface)] IAMMediaStream pAmMediaStream
             );
 
         [PreserveSig]
@@ -562,12 +696,12 @@ namespace DirectShowLib.MultimediaStreaming
 
         [PreserveSig]
         int WaitUntil(
-            [In] long WaitStreamTime
+            [In] long waitStreamTime
             );
 
         [PreserveSig]
         int Flush(
-            [In, MarshalAs(UnmanagedType.Bool)] bool bCancelEOS
+            [In, MarshalAs(UnmanagedType.Bool)] bool bCancelEos
             );
 
         [PreserveSig]
