@@ -10,6 +10,15 @@ platform: Any CPU
 
 image: Visual Studio 2017
 
+cache:
+  - packages -> **\packages.config
+
+before_build:
+- cmd: >-
+    appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+
+    appveyor-retry nuget restore
+
 build:
   publish_nuget: true
   verbosity: minimal
